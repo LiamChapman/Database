@@ -5,9 +5,9 @@ class Database {
 	static $pdo;
 	public $table = null;	
 
-	public function __construct ($host, $username, $password, $database) {						
+	public function __construct ($host, $username, $password, $database) {		
 		try {
-			self::$pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
+			self::$pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));			
 		} catch(PDOException $e) {
 			echo $e->getMessage();
 		}
@@ -38,7 +38,7 @@ class Database {
 			}//endif
 		}//endforeach
 		return $ok_to_use;
-	}	
+	}
 
 	public function raw_query ($sql, $insert_id = true) {
 		$query = self::$pdo->prepare($sql);
@@ -53,17 +53,31 @@ class Database {
 	public function rows ($where = '', $columns = '*', $table = null) {
 		$table 	 = is_null($table) ? $this->table : $table;
 		$columns = is_string($columns) ? $columns : implode(",", $columns);
-		$query = self::$pdo->query("SELECT " . $columns . " FROM " . $table . " " . $where);
-		$rows  = $query->fetchAll(PDO::FETCH_OBJ);				
+		$query 	 = self::$pdo->query("SELECT " . $columns . " FROM " . $table . " " . $where);
+		$rows  	 = $query->fetchAll(PDO::FETCH_OBJ);				
 		if (count($rows) == 1) {
 			return $rows[0];
 		} else {
 			return $rows;
 		}
 	}
+	
+	public function prep_rows ($where = '', $values = array(), $columns = '*', $table = null) {
+		$table 	 = is_null($table) ? $this->table : $table;
+		$columns = is_string($columns) ? $columns : implode(",", $columns);
+		$query 	 = self::$pdo->prepare("SELECT " . $columns . " FROM " . $table . " " . $where);		
+		if ($query->execute($values)) {
+			$rows = $query->fetchAll(PDO::FETCH_OBJ);
+			if (count($rows) == 1) {
+				return $rows[0];
+			} else {
+				return $rows;
+			}
+		}
+	}
 
 	public function insert ($data = array()) {
-		$data 	 = self::valid_to_process($data);	
+		$data 	 = self::valid_to_process($data);
 		$columns = array();
 		$values  = array();
 		foreach ($data as $column => $value) {
@@ -72,7 +86,7 @@ class Database {
 			$values[]  = $value;
 		}
 		$query = self::$pdo->prepare("INSERT INTO " . $this->table . " (".implode(',', $columns).") VALUES (".implode(",", $binded).")");
-		foreach ($binded as $key => $bind_to) {
+		foreach($binded as $key => $bind_to) {
 			$query->bindParam($bind_to, $values[$key]);
 		}
 		if ($query->execute()) {
@@ -90,16 +104,16 @@ class Database {
 			$values[]  = $value;
 		}
 		$query = self::$pdo->prepare("UPDATE " . $this->table . " SET ".implode(",", $columns)."  WHERE id = :id");
-		foreach ($binded as $key => $bind_to) {
+		foreach($binded as $key => $bind_to) {
 			$query->bindParam($bind_to, $values[$key]);
 		}
-		$query->bindParam(':id', $id, PDO::PARAM_INT);		
+		$query->bindParam(':id', $id, PDO::PARAM_INT);
 		if ($query->execute()) {
 			return $id;
 		}
 	}
 
-	public function save ($data) {				
+	public function save ($data) {		
 		if (!array_key_exists('id', $data)) {
 			return self::insert($data);
 		} else {
@@ -115,11 +129,9 @@ class Database {
 		}
 	}
 	
-	/* not tested this function yet */
 	public function table_exists () {
-		$query = "SHOW TABLES LIKE '".mysql_real_escape_string($this->table)."'";
-		if ($query = self::$pdo->query($query)) {
-			$result = $query->fetchAll(PDO::FETCH_OBJ);
+		$query = "SHOW TABLES LIKE '".$this->table."'";
+		if ($result = self::$pdo->query($query)) {
 			return count($result);
 		}
 	}
@@ -169,15 +181,15 @@ class Database {
 		}
 	}
 
-	private function beginTransaction () {
+	public function beginTransaction () {
  		self::$pdo->beginTransaction();
 	}
 		
-	private function commit () {
+	public function commit () {
 		self::$pdo->commit();
 	}
 	
-	private function rollback () {
+	public function rollback () {
 		self::$pdo->rollback();
 	}
 
