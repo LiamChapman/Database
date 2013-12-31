@@ -1,0 +1,13 @@
+{
+    "name": "liam-chapman/database",
+    "authors": [
+    	{
+    		"name": "Liam Chapman"
+    	}
+    ],
+    "description": "Simple PHP Database class for connecting to a database for inserting and updating etc",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.2.0"   
+    }
+}
