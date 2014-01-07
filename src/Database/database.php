@@ -1,5 +1,7 @@
 <?php
 
+namespace Database;
+
 class Database {
 
 	static $pdo;
