@@ -9,8 +9,8 @@ class Database {
 
 	public function __construct ($host, $username, $password, $database) {		
 		try {
-			self::$pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));			
-		} catch(PDOException $e) {
+			self::$pdo = new \PDO("mysql:host=$host;dbname=$database", $username, $password, array(\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));			
+		} catch(\PDOException $e) {
 			echo $e->getMessage();
 		}
 	}
@@ -20,7 +20,7 @@ class Database {
 		$columns = array();
 		// Get Columns from Database
 		$db_columns = self::$pdo->query("SHOW COLUMNS FROM " . $this->table);
-		$db_columns = $db_columns->fetchAll(PDO::FETCH_OBJ);
+		$db_columns = $db_columns->fetchAll(\PDO::FETCH_OBJ);
 		foreach ($db_columns as $obj) {
 			$columns[] = $obj->Field;
 		}
@@ -56,7 +56,7 @@ class Database {
 		$table 	 = is_null($table) ? $this->table : $table;
 		$columns = is_string($columns) ? $columns : implode(",", $columns);
 		$query 	 = self::$pdo->query("SELECT " . $columns . " FROM " . $table . " " . $where);
-		$rows  	 = $query->fetchAll(PDO::FETCH_OBJ);				
+		$rows  	 = $query->fetchAll(\PDO::FETCH_OBJ);				
 		if (count($rows) == 1) {
 			return $rows[0];
 		} else {
@@ -69,7 +69,7 @@ class Database {
 		$columns = is_string($columns) ? $columns : implode(",", $columns);
 		$query 	 = self::$pdo->prepare("SELECT " . $columns . " FROM " . $table . " " . $where);		
 		if ($query->execute($values)) {
-			$rows = $query->fetchAll(PDO::FETCH_OBJ);
+			$rows = $query->fetchAll(\PDO::FETCH_OBJ);
 			if (count($rows) == 1) {
 				return $rows[0];
 			} else {
@@ -109,7 +109,7 @@ class Database {
 		foreach($binded as $key => $bind_to) {
 			$query->bindParam($bind_to, $values[$key]);
 		}
-		$query->bindParam(':id', $id, PDO::PARAM_INT);
+		$query->bindParam(':id', $id, \PDO::PARAM_INT);
 		if ($query->execute()) {
 			return $id;
 		}
@@ -125,7 +125,7 @@ class Database {
 
 	public function delete ($id = null) {
 		$query = self::$pdo->prepare("DELETE FROM " . $this->table . " WHERE id = :id");
-		$query->bindParam(':id', $id, PDO::PARAM_INT);
+		$query->bindParam(':id', $id, \PDO::PARAM_INT);
 		if ($query->execute()) {
 			return $id;
 		}
